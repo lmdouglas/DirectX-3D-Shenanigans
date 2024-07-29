@@ -7,7 +7,7 @@ GraphicsEngineDX12::GraphicsEngineDX12()
 bool GraphicsEngineDX12::init()
 {
 	//DX11
-	D3D_DRIVER_TYPE driver_types;
+	//D3D_DRIVER_TYPE driver_types;
 
 	//DX12
 

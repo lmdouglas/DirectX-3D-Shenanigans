@@ -15,6 +15,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	case WM_CREATE:
 	{
 		//Event fired when the window will be created
+		//collected here...
+		window* win = (window*)((LPCREATESTRUCT)lparam)->lpCreateParams;
+		//and then stored for later lookup
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)win);
+		win->setHWND(hwnd);
 		win->onCreate();
 		break;
 	}
@@ -22,6 +27,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	case WM_DESTROY:
 	{
 		//Event fired when the window will be destroyed
+		window* win = (window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		win->onDestroy();
 		::PostQuitMessage(0);
 		break;
@@ -73,7 +79,7 @@ bool window::init()
 		NULL,
 		NULL,
 		NULL,
-		NULL
+		this
 	);
 
 
@@ -96,15 +102,15 @@ bool window::broadast()
 {
 	MSG msg;
 
+	this->onUpdate();
+
 	while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
-	win->onUpdate();
-
-	Sleep(0);
+	Sleep(1);
 
 	return true;
 }
@@ -116,6 +122,18 @@ bool window::release()
 		return false;
 
 	return true;
+}
+
+RECT window::getClientWindowRect()
+{
+	RECT rc;
+	::GetClientRect(this->m_hwnd, &rc);
+	return rc;
+}
+
+void window::setHWND(HWND hwnd)
+{
+	m_hwnd = hwnd;
 }
 
 bool window::isRun()
