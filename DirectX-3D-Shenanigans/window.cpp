@@ -7,6 +7,7 @@ window::window()
 
 }
 
+//Callback function to process messages sent to the window
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	switch (msg)
@@ -32,6 +33,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return NULL;
 }
 
+//Initialise Window
 bool window::init()
 {
 
@@ -71,7 +73,8 @@ bool window::init()
 		NULL,
 		NULL,
 		NULL,
-		NULL);
+		NULL
+	);
 
 
 	//If window failed to create, return false

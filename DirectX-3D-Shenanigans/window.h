@@ -19,7 +19,7 @@ public:
 
 	~window();
 protected:
-	HWND m_hwnd;
-	bool m_is_run;
+	HWND m_hwnd; //Window handle
+	bool m_is_run; //Flags application is running
 };
 
