@@ -22,12 +22,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+//A device is used to create resources and to ewnumerate the capailities of a display adapter 
+//Most applications only create one device
+
 
 #pragma once
 #include <d3d11.h>
 
 class SwapChain;
 class DeviceContext;
+class VertexBuffer;
 
 class GraphicsEngine
 {
@@ -41,6 +45,7 @@ public:
 public:
 	SwapChain* createSwapChain();
 	DeviceContext* getImmediateDeviceContext();
+	VertexBuffer* createVertexBuffer();
 public:
 	static GraphicsEngine* get();
 private:
@@ -54,5 +59,6 @@ private:
 
 private:
 	friend class SwapChain;
+	friend class VertexBuffer;
 };
 
