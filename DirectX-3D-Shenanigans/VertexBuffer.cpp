@@ -23,6 +23,8 @@ bool VertexBuffer::load(void* list_vertices, UINT size_vertex, UINT size_list, v
 
 	D3D11_SUBRESOURCE_DATA init_data = {};
 	init_data.pSysMem = list_vertices;
+
+	m_size_vertex = size_vertex;
 	m_size_list = size_list;
 
 	if (FAILED(GraphicsEngine::get()->m_d3d_device->CreateBuffer(&buff_desc, &init_data, &m_buffer)))
@@ -43,6 +45,11 @@ bool VertexBuffer::load(void* list_vertices, UINT size_vertex, UINT size_list, v
 		return false;
 	}
 	return true;
+}
+
+UINT VertexBuffer::getSizeVertexList()
+{
+	return this->m_size_list;
 }
 
 bool VertexBuffer::release()

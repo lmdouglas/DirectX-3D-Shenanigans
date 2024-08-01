@@ -11,6 +11,8 @@ void DeviceContext::clearRenderTargetColor(SwapChain* swap_chain, float red, flo
 	FLOAT clear_color[] = {red,green,blue,alpha};
 
 	m_device_context->ClearRenderTargetView(swap_chain->m_rtv, clear_color); 
+	m_device_context->OMSetRenderTargets(1, &swap_chain->m_rtv, NULL); 
+
 	return;
 }
 

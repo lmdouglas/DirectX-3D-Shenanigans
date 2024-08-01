@@ -41,21 +41,46 @@ void AppWindow::onCreate()
 	UINT size_list = ARRAYSIZE(list);
 
 	GraphicsEngine::get()->createShaders();
-	GraphicsEngine::get()->
-	m_vb->load(list, sizeof(vertex), size_list, )
+
+	void* shader_byte_code = nullptr;
+	UINT size_shader = 0;
+
+	GraphicsEngine::get()->getShaderBufferAndSize(&shader_byte_code, &size_shader);
+
+	m_vb->load(list, sizeof(vertex), size_list, shader_byte_code, size_shader);
 }
 
 void AppWindow::onUpdate()
 {
 	window::onUpdate();
+
+	//Clear the render target
 	GraphicsEngine::get()->getImmediateDeviceContext()->clearRenderTargetColor(this->m_swap_chain,
-		1, 0, 0, 1);
-	m_swap_chain->present(false);
+		0,0.3f,0.4f,1);
+
+	//Set viewport of render target in which we have to draw
+	RECT rc = this->getClientWindowRect();
+	GraphicsEngine::get()->getImmediateDeviceContext()->setViewportSize(rc.right - rc.left, rc.bottom - rc.top);
+
+	//Set the default shader in the graphics pipeline to be able to draw
+	GraphicsEngine::get()->setShaders();
+
+	//Set the vertices of the triangle to draw
+	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
+
+	//Draw the triangle
+	GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleList(m_vb->getSizeVertexList(), 0);
+
+
+
+
+	m_swap_chain->present(true);
 }
 
 void AppWindow::onDestroy()
 {
 	window::onDestroy();
+	m_vb->release();
 
 	m_swap_chain->release();
 
