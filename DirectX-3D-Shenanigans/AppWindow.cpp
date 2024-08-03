@@ -32,23 +32,25 @@ void AppWindow::onCreate()
 
 	//Triangle vertices
 	vertex list[] = {
-		//X-Y-Z Triangle 1
+		//X-Y-Z Triangle 1 (For TriangleList)
 		//{-0.5f,-0.5f,0.0f}, //POS1
 		//{-0.5f, 0.5f, 0.0f}, //POS2
 		//{0.5f, 0.5f, 0.0f}, //POS3
 
-		//X-Y-Z Triangle 1
+		//X-Y-Z Triangle 2 (For TriangleList)
 		//{0.5f,0.5f,0.0f}, //POS1
 		//{0.5f, -0.5f, 0.0f}, //POS2
 		//{-0.5f, -0.5f, 0.0f} //POS3
 
 
-		//Two triangles
-		{-0.5f,-0.5f,0.0f},
-		{-0.5f,0.5f,0.0f},
-		{0.5f,-0.5f,0.0f},
-		{0.5f,0.5f,0.0f}
-		//X-Y-Z
+		//Two triangles (For TriangleStrip)
+		{-0.5f,-0.5f,0.0f}, //bottom left
+		{-0.5f,0.5f,0.0f}, //top left
+		{0.5f,-0.5f,0.0f}, //bottom right
+		{0.5f,0.5f,0.0f} //top right
+
+
+		//X-Y-Z Original triangle
 		//{-0.5f,-0.5f,0.0f}, //POS1
 		//{0.0f, 0.5f, 0.0f}, //POS2
 		//{0.5f, -0.5f, 0.0f} //POS3
@@ -60,11 +62,16 @@ void AppWindow::onCreate()
 	GraphicsEngine::get()->createShaders();
 
 	void* shader_byte_code = nullptr;
-	UINT size_shader = 0;
+	size_t size_shader = 0;
+	GraphicsEngine::get()->compileVertexShader(L"VertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
 
-	GraphicsEngine::get()->getShaderBufferAndSize(&shader_byte_code, &size_shader);
+	m_vs=GraphicsEngine::get()->createVertexShader(shader_byte_code, size_shader);
+
+	//GraphicsEngine::get()->getShaderBufferAndSize(&shader_byte_code, &size_shader);
 
 	m_vb->load(list, sizeof(vertex), size_list, shader_byte_code, size_shader);
+
+	GraphicsEngine::get()->releaseCompiledShader();
 }
 
 void AppWindow::onUpdate()
@@ -81,6 +88,7 @@ void AppWindow::onUpdate()
 
 	//Set the default shader in the graphics pipeline to be able to draw
 	GraphicsEngine::get()->setShaders();
+	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexShader(m_vs);
 
 	//Set the vertices of the triangle to draw
 	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
