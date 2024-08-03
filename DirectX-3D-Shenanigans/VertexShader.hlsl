@@ -1,24 +1,23 @@
-float4 main( float4 pos : POSITION ) : SV_POSITION
+//Best to use a structure to handle more than one attribute (e.g. position & color)
+struct VS_INPUT
 {
-	return pos;
-}
+    float4 position : POSITION;
+    float3 color : COLOR;
+};
 
-float4 vsmain(float4 pos : POSITION) : SV_POSITION //SV_POSITION: says output of shader will contain final transformed vertex position in screen coords
+struct VS_OUTPUT
 {
-    if (pos.y > 0 && pos.y < 1)
-    {
-        pos.x += 0.25f;
-    }
+    float4 position : SV_POSITION;
+    float3 color : COLOR;
+};
+
+
+VS_OUTPUT vsmain(VS_INPUT input) //SV_POSITION: says output of shader will contain final transformed vertex position in screen coords
+{
+    VS_OUTPUT output = (VS_OUTPUT)0;
     
-    if (pos.y > -1 && pos.y < 0 && pos.x > 0 && pos.x < 1)
-    {
-        pos.y += 0.25f;
-    }
+    output.position = input.position;
+    output.color = input.color;
     
-    if (pos.y>0 && pos.y<1 && pos.x > -1 && pos.x < 0)
-    {
-        pos.y -= 0.25f;
-    }
-    
-        return pos;
+    return output;
 }

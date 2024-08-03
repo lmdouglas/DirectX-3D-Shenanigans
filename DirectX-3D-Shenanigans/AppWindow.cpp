@@ -8,6 +8,7 @@ struct vec3
 struct vertex
 {
 	vec3 position;
+	vec3 color;
 };
 
 AppWindow::AppWindow()
@@ -43,11 +44,11 @@ void AppWindow::onCreate()
 		//{-0.5f, -0.5f, 0.0f} //POS3
 
 
-		//Two triangles (For TriangleStrip)
-		{-0.5f,-0.5f,0.0f}, //bottom left
-		{-0.5f,0.5f,0.0f}, //top left
-		{0.5f,-0.5f,0.0f}, //bottom right
-		{0.5f,0.5f,0.0f} //top right
+		//Two triangles (For TriangleStrip) [pos1,pos2,pos3,color1,color2,color3]
+		{-0.5f,-0.5f,0.0f,  1,0,0}, //bottom left
+		{-0.5f,0.5f,0.0f,   0,1,0}, //top left
+		{0.5f,-0.5f,0.0f,   0,0,1}, //bottom right
+		{0.5f,0.5f,0.0f,    1,1,0} //top right
 
 
 		//X-Y-Z Original triangle
@@ -59,19 +60,24 @@ void AppWindow::onCreate()
 	m_vb = GraphicsEngine::get()->createVertexBuffer();
 	UINT size_list = ARRAYSIZE(list);
 
-	GraphicsEngine::get()->createShaders();
+	//GraphicsEngine::get()->createShaders();
 
 	void* shader_byte_code = nullptr;
 	size_t size_shader = 0;
+
+	//VERTEX SHADER
 	GraphicsEngine::get()->compileVertexShader(L"VertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
-
 	m_vs=GraphicsEngine::get()->createVertexShader(shader_byte_code, size_shader);
-
-	//GraphicsEngine::get()->getShaderBufferAndSize(&shader_byte_code, &size_shader);
-
 	m_vb->load(list, sizeof(vertex), size_list, shader_byte_code, size_shader);
-
 	GraphicsEngine::get()->releaseCompiledShader();
+
+	//PIXEL SHADER
+	GraphicsEngine::get()->compilePixelShader(L"PixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
+	m_ps = GraphicsEngine::get()->createPixelShader(shader_byte_code, size_shader);
+	GraphicsEngine::get()->releaseCompiledShader();
+
+
+
 }
 
 void AppWindow::onUpdate()
@@ -87,8 +93,8 @@ void AppWindow::onUpdate()
 	GraphicsEngine::get()->getImmediateDeviceContext()->setViewportSize(rc.right - rc.left, rc.bottom - rc.top);
 
 	//Set the default shader in the graphics pipeline to be able to draw
-	GraphicsEngine::get()->setShaders();
 	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexShader(m_vs);
+	GraphicsEngine::get()->getImmediateDeviceContext()->setPixelShader(m_ps);
 
 	//Set the vertices of the triangle to draw
 	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
@@ -109,6 +115,9 @@ void AppWindow::onDestroy()
 	m_vb->release();
 
 	m_swap_chain->release();
+
+	m_vs->release();
+	m_ps->release();
 
 	GraphicsEngine::get()->release();
 }
