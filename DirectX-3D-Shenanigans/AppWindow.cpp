@@ -30,11 +30,28 @@ void AppWindow::onCreate()
 
 	m_swap_chain->init(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
+	//Triangle vertices
 	vertex list[] = {
+		//X-Y-Z Triangle 1
+		//{-0.5f,-0.5f,0.0f}, //POS1
+		//{-0.5f, 0.5f, 0.0f}, //POS2
+		//{0.5f, 0.5f, 0.0f}, //POS3
+
+		//X-Y-Z Triangle 1
+		//{0.5f,0.5f,0.0f}, //POS1
+		//{0.5f, -0.5f, 0.0f}, //POS2
+		//{-0.5f, -0.5f, 0.0f} //POS3
+
+
+		//Two triangles
+		{-0.5f,-0.5f,0.0f},
+		{-0.5f,0.5f,0.0f},
+		{0.5f,-0.5f,0.0f},
+		{0.5f,0.5f,0.0f}
 		//X-Y-Z
-		{-0.5f,-0.5f,0.0f}, //POS1
-		{0.0f, 0.5f, 0.0f}, //POS2
-		{0.5f, -0.5f, 0.0f} //POS3
+		//{-0.5f,-0.5f,0.0f}, //POS1
+		//{0.0f, 0.5f, 0.0f}, //POS2
+		//{0.5f, -0.5f, 0.0f} //POS3
 	};
 
 	m_vb = GraphicsEngine::get()->createVertexBuffer();
@@ -68,10 +85,11 @@ void AppWindow::onUpdate()
 	//Set the vertices of the triangle to draw
 	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
 
-	//Draw the triangle
+	//Draw the triangles from list
 	GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleList(m_vb->getSizeVertexList(), 0);
 
-
+	//Altneratively: Draw from the buffer strip
+	GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleStrip(m_vb->getSizeVertexList(), 0);
 
 
 	m_swap_chain->present(true);
