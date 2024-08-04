@@ -1,23 +1,34 @@
 //Best to use a structure to handle more than one attribute (e.g. position & color)
+
 struct VS_INPUT
 {
     float4 position : POSITION;
+    float4 position1 : POSITION1;
     float3 color : COLOR;
+    float3 color1 : COLOR1;
 };
 
 struct VS_OUTPUT
 {
     float4 position : SV_POSITION;
     float3 color : COLOR;
+    float3 color1 : COLOR1;
 };
 
 
-VS_OUTPUT vsmain(VS_INPUT input) //SV_POSITION: says output of shader will contain final transformed vertex position in screen coords
+cbuffer constant : register(b0)
 {
-    VS_OUTPUT output = (VS_OUTPUT)0;
-    
-    output.position = input.position;
+    float m_angle;
+};
+
+
+
+VS_OUTPUT vsmain(VS_INPUT input)
+{
+    VS_OUTPUT output = (VS_OUTPUT) 0;
+	
+    output.position = lerp(input.position, input.position1, (sin(m_angle) + 1.0f) / 2.0f);
     output.color = input.color;
-    
+    output.color1 = input.color1;
     return output;
 }

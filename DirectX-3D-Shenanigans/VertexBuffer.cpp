@@ -34,9 +34,15 @@ bool VertexBuffer::load(void* list_vertices, UINT size_vertex, UINT size_list, v
 
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
+		//VERTEX ATTRIBUTES!
+		
 		//SEMANTIC NAME  - SEMANTIC INDEX - FORMAT - INPUT SLOW - ALIGNED BYTE OFFSET - INPUT SLOT CLASS - INSTANCE DATA STEP RATE
+
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0} //12 is the offset i.e. the size of all the position attributes before
+		{"POSITION", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}, //constant buffer, 12 offset
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0}, //24 is the offset i.e. the size of all the position attributes before (2*12)
+		{ "COLOR", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, 36, D3D11_INPUT_PER_VERTEX_DATA, 0 } //24 is the offset i.e. the size of all the position attributes before (2*12)
+
 	};
 
 	UINT size_layout = ARRAYSIZE(layout);
