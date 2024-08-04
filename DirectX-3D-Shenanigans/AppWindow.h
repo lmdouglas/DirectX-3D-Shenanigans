@@ -12,6 +12,9 @@ class AppWindow : public window
 {
 public:
 	AppWindow();
+
+	void updateQuadPosition();
+
 	~AppWindow();
 
 	// Inherited via window
@@ -29,5 +32,12 @@ private:
 	unsigned long m_old_time = 0;
 	float m_delta_time = 0;
 	float m_angle = 0;
+
+	float m_old_delta = 0;
+	float m_new_delta = 0;
+	float delta_delta = 0;
+
+	float m_delta_pos = 0;
+	float m_delta_scale = 0;
 };
 
