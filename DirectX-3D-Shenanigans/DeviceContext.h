@@ -13,6 +13,7 @@ class VertexBuffer;
 class VertexShader;
 class PixelShader;
 class ConstantBuffer;
+class IndexBuffer;
 
 class DeviceContext
 {
@@ -32,6 +33,9 @@ public:
 	
 	void setConstantBuffer(VertexShader* vertex_shader, ConstantBuffer* buffer);
 	void setConstantBuffer(PixelShader* pixel_shader, ConstantBuffer* buffer);
+
+	void setIndexBuffer(IndexBuffer* index_buffer);
+	void drawIndexedTriangleList(UINT index_count, UINT start_vertex_index, UINT start_index_location);
 
 	bool release();
 

@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "VertexShader.h"
 #include "PixelShader.h"
 #include "ConstantBuffer.h"
+#include "IndexBuffer.h"
 
 #include <d3dcompiler.h>
 
@@ -155,6 +156,11 @@ PixelShader* GraphicsEngine::createPixelShader(const void* shader_byte_code, siz
 ConstantBuffer* GraphicsEngine::createConstantBuffer()
 {
 	return new ConstantBuffer();
+}
+
+IndexBuffer* GraphicsEngine::createIndexBuffer()
+{
+	return new IndexBuffer();
 }
 
 bool GraphicsEngine::compileVertexShader(const wchar_t* file_name, const char* entry_point_name, void** shader_byte_code, size_t* byte_code_size)
