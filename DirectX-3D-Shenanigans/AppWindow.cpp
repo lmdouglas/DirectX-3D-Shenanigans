@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include "Vector3D.h"
 #include "Matrix4x4.h"
+#include "InputSystem.h"
 
 
 struct vertex
@@ -58,15 +59,19 @@ void AppWindow::updateQuadPosition()
 	cc.m_world.setScale(Vector3D(1, 1, 1));
 
 	temp.setIdentity();
-	temp.setRotationZ(m_delta_scale);
+	//temp.setRotationZ(m_delta_scale);
+	//For keyboard input rotation:
+	temp.setRotationZ(0.0f);
 	cc.m_world *= temp;
 
 	temp.setIdentity();
-	temp.setRotationY(m_delta_scale);
+	//temp.setRotationY(m_delta_scale);
+	temp.setRotationY(m_rot_y); //keyboard input rotation
 	cc.m_world *= temp;
 
 	temp.setIdentity();
-	temp.setRotationX(m_delta_scale);
+	//temp.setRotationX(m_delta_scale);
+	temp.setRotationZ(m_rot_x); //keyboard input rotation
 	cc.m_world *= temp;
 
 
@@ -91,6 +96,9 @@ AppWindow::~AppWindow()
 void AppWindow::onCreate()
 {
 	window::onCreate();
+
+	InputSystem::get()->addListener(this);
+
 	GraphicsEngine::get()->init(); 
 	m_swap_chain = GraphicsEngine::get()->createSwapChain();
 
@@ -199,6 +207,8 @@ void AppWindow::onUpdate()
 {
 	window::onUpdate();
 
+	InputSystem::get()->update();
+
 	//Clear the render target
 	GraphicsEngine::get()->getImmediateDeviceContext()->clearRenderTargetColor(this->m_swap_chain,
 		0,0.3f,0.4f,1);
@@ -254,4 +264,31 @@ void AppWindow::onDestroy()
 	m_cb->release();
 
 	GraphicsEngine::get()->release();
+}
+
+void AppWindow::onKeyDown(int key)
+{
+	if (key == 'W')
+	{
+		m_rot_x += 0.707f * m_delta_time;
+	}
+	else if (key == 'S')
+	{
+		m_rot_x -= 0.707f * m_delta_time;
+	}
+	else if (key == 'A')
+	{
+		m_rot_y += 0.707f * m_delta_time;
+	}
+	else if (key == 'D')
+	{
+		m_rot_y -= 0.707f * m_delta_time;
+	}
+
+}
+
+void AppWindow::onKeyUp(int key)
+{
+
+
 }
