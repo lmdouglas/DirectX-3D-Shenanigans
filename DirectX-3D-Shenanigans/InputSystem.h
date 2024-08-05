@@ -1,6 +1,6 @@
 #pragma once
 #include "InputListener.h"
-#include <map>
+#include <unordered_set>
 
 class InputSystem
 {
@@ -16,7 +16,8 @@ public:
 	static InputSystem* get();
 
 private:
-	std::map<InputListener*, InputListener*> m_map_listeners;
+	//std::map<InputListener*, InputListener*> m_map_listeners;
+	std::unordered_set<InputListener*> m_set_listeners;
 	unsigned char m_keys_state[256] = {}; //KeyboardState returns state of every key on keyboard
 	unsigned char m_old_keys_state[256] = {}; //KeyboardState returns state of every key on keyboard
 };
