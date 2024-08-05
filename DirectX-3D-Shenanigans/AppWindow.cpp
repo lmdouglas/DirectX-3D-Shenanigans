@@ -56,7 +56,7 @@ void AppWindow::updateQuadPosition()
 //	temp.setTranslation(Vector3D::lerp(Vector3D(-1.5f, -1.5f, 0), Vector3D(1.5f, 1.5f, 0), m_delta_pos));
 //	cc.m_world *= temp;
 
-	cc.m_world.setScale(Vector3D(1, 1, 1));
+	cc.m_world.setScale(Vector3D(m_scale_cube, m_scale_cube, m_scale_cube));
 
 	temp.setIdentity();
 	//temp.setRotationZ(m_delta_scale);
@@ -266,6 +266,17 @@ void AppWindow::onDestroy()
 	GraphicsEngine::get()->release();
 }
 
+void AppWindow::onFocus()
+{
+	InputSystem::get()->addListener(this);
+}
+
+void AppWindow::onKillFocus()
+{
+	//Stop listening to inputs when window is not in focus
+	InputSystem::get()->removeListener(this);
+}
+
 void AppWindow::onKeyDown(int key)
 {
 	if (key == 'W')
@@ -291,4 +302,33 @@ void AppWindow::onKeyUp(int key)
 {
 
 
+}
+
+void AppWindow::onMouseMove(const Point& delta_mouse_pos)
+{
+	m_rot_x += delta_mouse_pos.m_y * m_delta_time;
+	m_rot_y += delta_mouse_pos.m_x * m_delta_time;
+
+}
+
+void AppWindow::onLeftMouseDown(const Point& mouse_pos)
+{
+	m_scale_cube = 0.5f;
+
+}
+
+void AppWindow::onLeftMouseUp(const Point& mouse_pos)
+{
+	m_scale_cube = 1.0f;
+
+}
+
+void AppWindow::onRightMouseDown(const Point& mouse_pos)
+{
+	m_scale_cube = 2.0f;
+}
+
+void AppWindow::onRightMouseUp(const Point& mouse_pos)
+{
+	m_scale_cube = 1.0f;
 }

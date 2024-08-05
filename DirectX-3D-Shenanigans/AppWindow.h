@@ -23,10 +23,17 @@ public:
 	virtual void onCreate() override;
 	virtual void onUpdate() override;
 	virtual void onDestroy() override;
+	virtual void onFocus() override;
+	virtual void onKillFocus() override;
 
 	// Inherited via InputListener
 	void onKeyDown(int key) override;
 	void onKeyUp(int key) override;
+	void onMouseMove(const Point& delta_mouse_pos) override;
+	void onLeftMouseDown(const Point& mouse_pos) override;
+	void onLeftMouseUp(const Point& mouse_pos) override;
+	void onRightMouseDown(const Point& mouse_pos) override;
+	void onRightMouseUp(const Point& mouse_pos) override;
 
 private:
 	SwapChain* m_swap_chain;
@@ -51,6 +58,7 @@ private:
 	float m_rot_x = 0.0f;
 	float m_rot_y = 0.0f;
 
+	float m_scale_cube = 1.0f;
 
 };
 
