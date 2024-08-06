@@ -5,8 +5,10 @@
 #include "PixelShader.h"
 #include "ConstantBuffer.h"
 #include "IndexBuffer.h"
+#include "RenderSystem.h"
+#include <exception>
 
-DeviceContext::DeviceContext(ID3D11DeviceContext* device_context):m_device_context(device_context)
+DeviceContext::DeviceContext(ID3D11DeviceContext* device_context, RenderSystem* system):m_device_context(device_context), m_system(system)
 {
 }
 
@@ -85,13 +87,7 @@ void DeviceContext::drawIndexedTriangleList(UINT index_count, UINT start_vertex_
 	m_device_context->DrawIndexed(index_count, start_index_location,start_vertex_index);
 }
 
-bool DeviceContext::release()
-{
-	m_device_context->Release();
-	delete this;
-	return true;
-}
-
 DeviceContext::~DeviceContext()
 {
+	m_device_context->Release();
 }

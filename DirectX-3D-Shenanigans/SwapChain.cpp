@@ -1,20 +1,17 @@
 #include "SwapChain.h"
-#include "GraphicsEngine.h"
+#include "RenderSystem.h"
+#include <exception>
 
-SwapChain::SwapChain()
+SwapChain::SwapChain(HWND hwnd, UINT width, UINT height, RenderSystem* system) : m_system(system)
 {
-}
-
-bool SwapChain::init(HWND hwnd, UINT width, UINT height)
-{
-	ID3D11Device* device = GraphicsEngine::get()->m_d3d_device;
+	ID3D11Device* device = m_system->m_d3d_device;
 
 	DXGI_SWAP_CHAIN_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.BufferCount = 1;
 	desc.BufferDesc.Width = width;
 	desc.BufferDesc.Height = height;
-	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
+	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.BufferDesc.RefreshRate.Numerator = 60;
 	desc.BufferDesc.RefreshRate.Denominator = 1;
 	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -24,20 +21,20 @@ bool SwapChain::init(HWND hwnd, UINT width, UINT height)
 	desc.Windowed = TRUE;
 
 	//Create the swap chain fro the window indicated by the HWND parameter
-	HRESULT hr = GraphicsEngine::get()->m_dxgi_factory->CreateSwapChain(device,&desc,&m_swap_chain);
+	HRESULT hr = m_system->m_dxgi_factory->CreateSwapChain(device, &desc, &m_swap_chain);
 
 	if (FAILED(hr))
 	{
-		return false;
+		throw std::exception("SwapChain1");
 	}
 
 	//Get the back buffer
 	ID3D11Texture2D* buffer;
-	hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D),(void**)&buffer);
+	hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
 
 	if (FAILED(hr))
 	{
-		return false;
+		throw std::exception("SwapChain2");
 	}
 
 	hr = device->CreateRenderTargetView(buffer, NULL, &m_rtv);
@@ -45,10 +42,9 @@ bool SwapChain::init(HWND hwnd, UINT width, UINT height)
 
 	if (FAILED(hr))
 	{
-		return false;
+		throw std::exception("SwapChain3");
 	}
 
-	return true;
 }
 
 bool SwapChain::present(bool vsync)
@@ -57,13 +53,8 @@ bool SwapChain::present(bool vsync)
 	return false;
 }
 
-bool SwapChain::release()
-{
-	m_swap_chain->Release();
-	delete this;
-	return true;
-}
 
 SwapChain::~SwapChain()
 {
+	m_swap_chain->Release();
 }

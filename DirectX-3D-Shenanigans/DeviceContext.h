@@ -1,5 +1,6 @@
 #pragma once
 #include <d3d11.h>
+#include "Prerequisites.h"
 
 //What is device context?
 // //A device context contains the circumstance or setting in which a device is used.
@@ -18,7 +19,7 @@ class IndexBuffer;
 class DeviceContext
 {
 public: 
-	DeviceContext(ID3D11DeviceContext* device_context);
+	DeviceContext(ID3D11DeviceContext* device_context, RenderSystem* system);
 
 	void clearRenderTargetColor(SwapChain* swap_chain, float red, float green, float blue, float alpha);
 	void setVertexBuffer(VertexBuffer* vertex_buffer);
@@ -37,11 +38,10 @@ public:
 	void setIndexBuffer(IndexBuffer* index_buffer);
 	void drawIndexedTriangleList(UINT index_count, UINT start_vertex_index, UINT start_index_location);
 
-	bool release();
-
 
 	~DeviceContext();
 private:
+	RenderSystem* m_system = nullptr;
 	ID3D11DeviceContext* m_device_context;
 private:
 	friend class ConstantBuffer;

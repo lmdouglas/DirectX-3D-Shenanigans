@@ -1,19 +1,17 @@
 #pragma once
 #include <d3d11.h>
-
-class DeviceContext;
+#include "Prerequisites.h"
 
 class IndexBuffer
 {
 public:
-	IndexBuffer();
-	bool load(void* list_vertices, UINT size_vertex);
+	IndexBuffer(void* list_vertices, UINT size_vertex, RenderSystem* system);
 	UINT getSizeIndexList();
-	bool release();
 	~IndexBuffer();
 private:
 	UINT m_size_list;
 private:
+	RenderSystem* m_system = nullptr;
 	ID3D11Buffer* m_buffer;
 private:
 	friend class DeviceContext;

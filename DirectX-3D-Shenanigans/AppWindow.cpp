@@ -123,7 +123,7 @@ void AppWindow::update()
 
 
 
-	m_cb->update(GraphicsEngine::get()->getImmediateDeviceContext(), &cc);
+	m_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
 }
 
 AppWindow::~AppWindow()
@@ -139,11 +139,9 @@ void AppWindow::onCreate()
 	InputSystem::get()->showCursor(false);
 
 	GraphicsEngine::get()->init(); 
-	m_swap_chain = GraphicsEngine::get()->createSwapChain();
 
 	RECT rc = this->getClientWindowRect();
-
-	m_swap_chain->init(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
+	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
 	m_world_cam.setTranslation(Vector3D(0, 0, -2));
 
@@ -190,7 +188,7 @@ void AppWindow::onCreate()
 
 	};
 
-	m_vb = GraphicsEngine::get()->createVertexBuffer();
+
 	UINT size_list = ARRAYSIZE(vertex_list);
 
 	unsigned int index_list[] =
@@ -217,30 +215,27 @@ void AppWindow::onCreate()
 	UINT size_index_list = ARRAYSIZE(index_list);
 
 	
-	m_ib=GraphicsEngine::get()->createIndexBuffer();
-	m_ib->load(index_list, size_index_list);
-
+	m_ib=GraphicsEngine::get()->getRenderSystem()->createIndexBuffer(index_list, size_index_list);
 
 
 	void* shader_byte_code = nullptr;
 	size_t size_shader = 0;
 
 	//VERTEX SHADER
-	GraphicsEngine::get()->compileVertexShader(L"VertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
-	m_vs=GraphicsEngine::get()->createVertexShader(shader_byte_code, size_shader);
-	m_vb->load(vertex_list, sizeof(vertex), size_list, shader_byte_code, size_shader);
-	GraphicsEngine::get()->releaseCompiledShader();
+	GraphicsEngine::get()->getRenderSystem()->compileVertexShader(L"VertexShader.hlsl", "vsmain", &shader_byte_code, &size_shader);
+	m_vs=GraphicsEngine::get()->getRenderSystem()->createVertexShader(shader_byte_code, size_shader);
+	m_vb = GraphicsEngine::get()->getRenderSystem()->createVertexBuffer(vertex_list, sizeof(vertex), size_list, shader_byte_code, size_shader);
+	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
 	//PIXEL SHADER
-	GraphicsEngine::get()->compilePixelShader(L"PixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
-	m_ps = GraphicsEngine::get()->createPixelShader(shader_byte_code, size_shader);
-	GraphicsEngine::get()->releaseCompiledShader();
+	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"PixelShader.hlsl", "psmain", &shader_byte_code, &size_shader);
+	m_ps = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
+	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
 	//CONSTANTBUFFER
 	constant cc;
 	cc.m_angle = 0;
-	m_cb = GraphicsEngine::get()->createConstantBuffer();
-	m_cb->load(&cc, sizeof(constant));
+	m_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
 
 }
 
@@ -251,28 +246,30 @@ void AppWindow::onUpdate()
 	InputSystem::get()->update();
 
 	//Clear the render target
-	GraphicsEngine::get()->getImmediateDeviceContext()->clearRenderTargetColor(this->m_swap_chain,
-		0,0.3f,0.4f,1);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()
+		->clearRenderTargetColor(
+			this->m_swap_chain,
+			0,0.3f,0.4f,1);
 
 	//Set viewport of render target in which we have to draw
 	RECT rc = this->getClientWindowRect();
-	GraphicsEngine::get()->getImmediateDeviceContext()->setViewportSize(rc.right - rc.left, rc.bottom - rc.top);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setViewportSize(rc.right - rc.left, rc.bottom - rc.top);
 
 	//Update constant buffer
 	update();
 	
-	GraphicsEngine::get()->getImmediateDeviceContext()->setConstantBuffer(m_vs, m_cb);
-	GraphicsEngine::get()->getImmediateDeviceContext()->setConstantBuffer(m_ps, m_cb);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(m_vs, m_cb);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(m_ps, m_cb);
 
 	//Set the default shader in the graphics pipeline to be able to draw
-	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexShader(m_vs);
-	GraphicsEngine::get()->getImmediateDeviceContext()->setPixelShader(m_ps);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(m_vs);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(m_ps);
 
 	//Set the vertices of the triangle to draw
-	GraphicsEngine::get()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
 
 	//Set the indices of the triangles to draw
-    GraphicsEngine::get()->getImmediateDeviceContext()->setIndexBuffer(m_ib);
+    GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setIndexBuffer(m_ib);
 
 	//Draw the triangles from list
 	//GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleList(m_vb->getSizeVertexList(), 0);
@@ -281,7 +278,7 @@ void AppWindow::onUpdate()
 	//GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleStrip(m_vb->getSizeVertexList(), 0);
 
     //Draw indexed triangle list
-	GraphicsEngine::get()->getImmediateDeviceContext()->drawIndexedTriangleList(m_ib->getSizeIndexList(), 0, 0);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(m_ib->getSizeIndexList(), 0, 0);
 
 	m_old_delta = m_new_delta;
 	m_new_delta = ::GetTickCount64();
@@ -294,15 +291,8 @@ void AppWindow::onUpdate()
 void AppWindow::onDestroy()
 {
 	window::onDestroy();
-	m_vb->release();
 
-	m_swap_chain->release();
-
-	m_vs->release();
-	m_ps->release();
-
-	m_ib->release();
-	m_cb->release();
+	delete m_vb, m_swap_chain, m_vs, m_ps, m_ib, m_cb;
 
 	GraphicsEngine::get()->release();
 }
@@ -339,6 +329,10 @@ void AppWindow::onKeyDown(int key)
 	{
 		//m_rot_y -= 0.707f * m_delta_time;
 		m_right = 1.0f;
+	}
+	else if (key == 27) //ESC key
+	{
+		//close the window?
 	}
 
 }
