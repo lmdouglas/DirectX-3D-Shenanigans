@@ -131,6 +131,9 @@
     <ClInclude Include="Point.h">
       <Filter>GameEngine\Maths</Filter>
     </ClInclude>
+    <ClInclude Include="Vector4D.h">
+      <Filter>GameEngine\Maths</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader.fx">
