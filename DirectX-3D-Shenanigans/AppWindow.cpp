@@ -19,7 +19,7 @@ struct constant
 	Matrix4x4 m_world;
 	Matrix4x4 m_view;
 	Matrix4x4 m_proj;
-	float m_angle;
+	float m_angle = 0.0f;
 };
 
 
@@ -138,9 +138,7 @@ void AppWindow::onCreate()
 	InputSystem::get()->addListener(this);
 	InputSystem::get()->showCursor(false);
 
-	GraphicsEngine::get()->init(); 
-
-	RECT rc = this->getClientWindowRect();
+		RECT rc = this->getClientWindowRect();
 	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
 	m_world_cam.setTranslation(Vector3D(0, 0, -2));
@@ -292,9 +290,6 @@ void AppWindow::onDestroy()
 {
 	window::onDestroy();
 
-	delete m_vb, m_swap_chain, m_vs, m_ps, m_ib, m_cb;
-
-	GraphicsEngine::get()->release();
 }
 
 void AppWindow::onFocus()

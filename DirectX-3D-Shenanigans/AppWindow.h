@@ -37,12 +37,12 @@ public:
 	void onRightMouseUp(const Point& mouse_pos) override;
 
 private:
-	SwapChain* m_swap_chain;
-	VertexBuffer* m_vb;
-	VertexShader* m_vs;
-	PixelShader* m_ps;
-	ConstantBuffer* m_cb;
-	IndexBuffer* m_ib;
+	SwapChainPtr m_swap_chain;
+	VertexBufferPtr m_vb;
+	VertexShaderPtr m_vs;
+	PixelShaderPtr m_ps;
+	ConstantBufferPtr m_cb;
+	IndexBufferPtr m_ib;
 
 private:
 	unsigned long m_old_time = 0;

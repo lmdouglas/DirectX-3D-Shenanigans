@@ -6,21 +6,18 @@
 class RenderSystem
 {
 public:
+	//Initialise render system and directx 11 device
 	RenderSystem();
-	//Initialise the RenderSystem and DirectX 11 Device
-	bool init();
-	//Release all the resources loaded
-	bool release();
 	~RenderSystem();
 
 public:
-	SwapChain* createSwapChain(HWND hwnd, UINT width, UINT height);
-	DeviceContext* getImmediateDeviceContext();
-	VertexBuffer* createVertexBuffer(void* list_vertices, UINT size_vertex, UINT size_list, void* shader_byte_code, UINT size_byte_shader);
-	VertexShader* createVertexShader(const void* shader_byte_code, size_t byte_code_size);
-	PixelShader* createPixelShader(const void* shader_byte_code, size_t byte_code_size);
-	ConstantBuffer* createConstantBuffer(void* buffer, UINT size_buffer);
-	IndexBuffer* createIndexBuffer(void* list_vertices, UINT size_vertex);
+	SwapChainPtr createSwapChain(HWND hwnd, UINT width, UINT height);
+	DeviceContextPtr getImmediateDeviceContext();
+	VertexBufferPtr createVertexBuffer(void* list_vertices, UINT size_vertex, UINT size_list, void* shader_byte_code, UINT size_byte_shader);
+	VertexShaderPtr createVertexShader(const void* shader_byte_code, size_t byte_code_size);
+	PixelShaderPtr createPixelShader(const void* shader_byte_code, size_t byte_code_size);
+	ConstantBufferPtr createConstantBuffer(void* buffer, UINT size_buffer);
+	IndexBufferPtr createIndexBuffer(void* list_vertices, UINT size_vertex);
 
 public:
 	bool compileVertexShader(const wchar_t* file_name, const char* entry_point_name, void** shader_byte_code, size_t* byte_code_size);
@@ -37,7 +34,7 @@ private:
 	D3D_FEATURE_LEVEL m_feature_level;
 
 private:
-	DeviceContext* m_imm_device_context;
+	DeviceContextPtr m_imm_device_context;
 	IDXGIDevice* m_dxgi_device;
 	IDXGIAdapter* m_dxgi_adapter;
 	IDXGIFactory* m_dxgi_factory;

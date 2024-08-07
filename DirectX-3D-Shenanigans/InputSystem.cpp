@@ -1,5 +1,6 @@
 #include "InputSystem.h"
 #include <Windows.h>
+InputSystem* InputSystem::m_system = nullptr;
 
 InputSystem::InputSystem()
 {
@@ -7,6 +8,7 @@ InputSystem::InputSystem()
 
 InputSystem::~InputSystem()
 {
+	InputSystem::m_system = nullptr;
 }
 
 void InputSystem::update()
@@ -97,21 +99,12 @@ void InputSystem::update()
 void InputSystem::addListener(InputListener* listener)
 {
 	m_set_listeners.insert(listener);
-	//m_map_listeners.insert
-	//(std::make_pair<InputListener*, InputListener*>
-	//	(std::forward<InputListener*>(listener), std::forward<InputListener*>(listener))
-	//);
 	return;
 }
 
 void InputSystem::removeListener(InputListener* listener)
 {
 	m_set_listeners.erase(listener);
-	//std::map<InputListener*, InputListener*>::iterator it = m_map_listeners.find(listener);
-	//if (it != m_map_listeners.end())
-	//{
-	//	m_map_listeners.erase(it);
-	//}
 	return;
 }
 
@@ -129,4 +122,16 @@ InputSystem* InputSystem::get()
 {
 	static InputSystem system;
 	return &system;
+}
+
+void InputSystem::create()
+{
+	if (InputSystem::m_system) throw std::exception("Inputsystem already created");
+	InputSystem::m_system = new InputSystem();
+}
+
+void InputSystem::release()
+{
+	if (!InputSystem::m_system) return;
+	delete InputSystem::m_system;
 }
