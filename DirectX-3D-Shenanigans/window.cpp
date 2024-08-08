@@ -1,6 +1,5 @@
 #include "window.h"
 #include <exception>
-//Window* window=nullptr;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -68,9 +67,6 @@ window::window()
 	if (!::RegisterClassEx(&wc)) // If the registration of class will fail, the function will return false
 		throw std::exception("Window not created successfully");
 
-	/*if (!window)
-	window = this;*/
-
 	//Creation of the window
 	m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, L"MyWindowClass", L"DirectX Application",
 		WS_CAPTION | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768,
@@ -80,13 +76,9 @@ window::window()
 	if (!m_hwnd)
 		throw std::exception("Window not created successfully");
 
-
 	//show up the window
 	::ShowWindow(m_hwnd, SW_SHOW);
 	::UpdateWindow(m_hwnd);
-
-
-
 
 	//set this flag to true to indicate that the window is initialized and running
 	m_is_run = true;
