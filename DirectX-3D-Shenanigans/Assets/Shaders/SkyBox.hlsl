@@ -22,42 +22,55 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-//A device is used to create resources and to ewnumerate the capailities of a display adapter 
-//Most applications only create one device
-
-
-#pragma once
-#include <d3d11.h>
-#include "Prerequisites.h"
-#include "RenderSystem.h"
-#include "TextureManager.h"
-#include "MeshManager.h"
-
-class GraphicsEngine
+struct VS_INPUT
 {
-private:
-	//Initialise the GraphicsEngine and DirectX 11 Device
-	GraphicsEngine();
-	//Release all the resources loaded
-	~GraphicsEngine();
-public:
-	RenderSystem* getRenderSystem();
-	TextureManager* getTextureManager();
-	MeshManager* getMeshManager();
-	void getVertexMeshLayoutShaderByteCodeAndSize(void** byte_code, size_t* size);
-
-public:
-	static GraphicsEngine* get();
-	static void create();
-	static void release();
-
-private:
-	RenderSystem* m_render_system = nullptr;
-	TextureManager* m_tex_manager = nullptr;
-	MeshManager* m_mesh_manager = nullptr;
-	static GraphicsEngine* m_engine;
-
-	unsigned char m_mesh_layout_byte_code[1024];
-	size_t m_mesh_layout_size = 0;
+	float4 position: POSITION0;
+	float2 texcoord: TEXCOORD0;
+	float3 normal: NORMAL0;
+	float3 tangent: TANGENT0;
+	float3 binormal: BINORMAL0;
 };
 
+struct VS_OUTPUT
+{
+	float4 position: SV_POSITION;
+	float2 texcoord: TEXCOORD0;
+};
+
+
+cbuffer constant: register(b0)
+{
+	row_major float4x4 world;
+	row_major float4x4 view;
+	row_major float4x4 proj;
+};
+
+
+
+VS_OUTPUT vsmain(VS_INPUT input)
+{
+	VS_OUTPUT output = (VS_OUTPUT)0;
+
+	//WORLD SPACE
+	output.position = mul(input.position, world);
+	output.position = mul(output.position, view);
+	output.position = mul(output.position, proj);
+	output.texcoord = input.texcoord;
+
+	return output;
+}
+
+struct PS_INPUT
+{
+	float4 position: SV_POSITION;
+	float2 texcoord: TEXCOORD0;
+};
+
+Texture2D Color: register(t0);
+sampler ColorSampler: register(s0);
+
+float4 psmain(PS_INPUT input) : SV_TARGET
+{
+	return Color.Sample(ColorSampler, input.texcoord);
+
+}

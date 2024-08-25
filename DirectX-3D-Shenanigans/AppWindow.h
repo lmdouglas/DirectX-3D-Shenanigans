@@ -44,6 +44,7 @@ private:
 	ConstantBufferPtr m_cb;
 	IndexBufferPtr m_ib;
 	TexturePtr m_wood_texture;
+	MeshPtr m_mesh;
 
 private:
 	unsigned long m_old_time = 0;
