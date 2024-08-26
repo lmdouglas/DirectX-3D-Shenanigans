@@ -16,13 +16,15 @@ struct vertex
 };
 
 //Ensuring our constant time var (for animating) is 16 bytes
+//This structure can be accessed by shaders
 __declspec(align(16))
 struct constant
 {
 	Matrix4x4 m_world;
 	Matrix4x4 m_view;
 	Matrix4x4 m_proj;
-	float m_angle = 0.0f;
+	Vector4D m_light_direction;
+	Vector4D m_camera_position;
 };
 
 
@@ -44,7 +46,7 @@ void AppWindow::update()
 
 
 	constant cc;
-	cc.m_angle = m_angle;
+	//cc.m_angle = m_angle;
 
 	m_delta_pos += m_delta_time / 10.0f;
 	if (m_delta_pos > 1.0f)
@@ -52,6 +54,13 @@ void AppWindow::update()
 
 
 	Matrix4x4 temp;
+	Matrix4x4 m_light_rot_matrix; //4x4 Matrix for light direction
+	m_light_rot_matrix.setIdentity();
+	m_light_rot_matrix.setRotationY(m_light_rot_y);
+	cc.m_light_direction = m_light_rot_matrix.getZDirection();
+
+	//Rotate light 45deg for next rot
+	m_light_rot_y += 0.785f * m_delta_time; //0.785 rads
 
 	m_delta_scale += m_delta_time / 2.0f; //set the speed here - 2x slower currently
 
@@ -92,10 +101,11 @@ void AppWindow::update()
 	world_cam *= temp;
 
 
-	Vector3D new_pos = m_world_cam.getTranslation() + world_cam.getZDirection() * (m_forward * 0.3f);
-	new_pos = new_pos + world_cam.getXDirection() * (m_right * 0.3f);
+	//Camera movement: Reduce speed with final term
+	Vector3D new_pos = m_world_cam.getTranslation() + world_cam.getZDirection() * (m_forward * 0.01f);
+	new_pos = new_pos + world_cam.getXDirection() * (m_right * 0.01f);
 
-
+	cc.m_camera_position = new_pos;
 	world_cam.setTranslation(new_pos); //so as to not be inside our cube
 
 	m_world_cam = world_cam;
@@ -148,12 +158,13 @@ void AppWindow::onCreate()
 		//Error logging?
 	}
 
-	m_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"Assets\\Meshes\\teapot.obj");
+	m_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"Assets\\Meshes\\statue.obj");
 
 		RECT rc = this->getClientWindowRect();
 	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
-	m_world_cam.setTranslation(Vector3D(0, 0, -2));
+	//Inital position of camera
+	m_world_cam.setTranslation(Vector3D(0, 0, -1));
 
 	/*
 	//Triangle vertices
@@ -288,7 +299,7 @@ void AppWindow::onCreate()
 
 	//CONSTANTBUFFER
 	constant cc;
-	cc.m_angle = 0;
+	//cc.m_angle = 0;
 	m_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
 
 }
@@ -388,6 +399,7 @@ void AppWindow::onKeyDown(int key)
 	else if (key == 27) //ESC key
 	{
 		//close the window?
+		m_is_run = false;
 	}
 
 }

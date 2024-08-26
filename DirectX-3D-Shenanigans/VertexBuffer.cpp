@@ -33,7 +33,7 @@ VertexBuffer::VertexBuffer(void* list_vertices, UINT size_vertex, UINT size_list
 
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}, //12 is the offset i.e. the size of all the position attributes before (1*12)
-		
+		{"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0} //Size of textures before is 2*4 so offset = 12 + 8
 
 	};
 
