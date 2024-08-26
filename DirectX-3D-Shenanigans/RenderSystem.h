@@ -29,6 +29,11 @@ public:
 	//bool setShaders();
 	//void getShaderBufferAndSize(void** bytecode, UINT* size);
 
+public:
+	void setRasterizerState(bool cull_front);
+private:
+	void initRasterizerState();
+
 private:
 	ID3D11Device* m_d3d_device;
 	D3D_FEATURE_LEVEL m_feature_level;
@@ -41,9 +46,12 @@ private:
 	ID3D11DeviceContext* m_imm_context;
 
 private:
-	ID3DBlob* m_blob = nullptr;
+	//For skybox rendering
+	ID3D11RasterizerState* m_cull_front_state = nullptr;
+	ID3D11RasterizerState* m_cull_back_state = nullptr;
 
-	ID3DBlob* m_vsblob = nullptr; //Blobs can be used as data buffers, storing vertex adjacency, and material info during mesh optimisation, and loading ops
+	ID3DBlob* m_blob = nullptr; //Blobs can be used as data buffers, storing vertex adjacency, and material info during mesh optimisation, and loading ops
+	ID3DBlob* m_vsblob = nullptr; 
 	ID3DBlob* m_psblob = nullptr;
 	ID3D11VertexShader* m_vs = nullptr;
 	ID3D11PixelShader* m_ps = nullptr;

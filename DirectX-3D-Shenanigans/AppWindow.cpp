@@ -35,61 +35,18 @@ AppWindow::AppWindow()
 
 void AppWindow::update()
 {
-	//Create constant object
-	unsigned long new_time = 0;
-	if (m_old_time)
-		new_time = ::GetTickCount64() - m_old_time;
-	m_delta_time = new_time / 1000.0f;
-	m_old_time = ::GetTickCount64();
+	//Make sure to update camera first - transforms of models depend on camera matrices
+	updateCamera();
 
-	m_angle += 1.57f * m_delta_time;
+	updateModel();
 
+	updateSkyBox();
 
-	constant cc;
-	//cc.m_angle = m_angle;
+}
 
-	m_delta_pos += m_delta_time / 10.0f;
-	if (m_delta_pos > 1.0f)
-		m_delta_pos = 0;
-
-
-	Matrix4x4 temp;
-	Matrix4x4 m_light_rot_matrix; //4x4 Matrix for light direction
-	m_light_rot_matrix.setIdentity();
-	m_light_rot_matrix.setRotationY(m_light_rot_y);
-	cc.m_light_direction = m_light_rot_matrix.getZDirection();
-
-	//Rotate light 45deg for next rot
-	m_light_rot_y += 0.785f * m_delta_time; //0.785 rads
-
-	m_delta_scale += m_delta_time / 2.0f; //set the speed here - 2x slower currently
-
-//	cc.m_world.setScale(Vector3D::lerp(Vector3D(0.5, 0.5, 0), Vector3D(1.0f, 1.0f, 0), (sin(m_delta_scale) + 1.0f) / 2.0f));
-//	temp.setTranslation(Vector3D::lerp(Vector3D(-1.5f, -1.5f, 0), Vector3D(1.5f, 1.5f, 0), m_delta_pos));
-//	cc.m_world *= temp;
-
-	/*
-	cc.m_world.setScale(Vector3D(m_scale_cube, m_scale_cube, m_scale_cube));
-
-	temp.setIdentity();
-	//temp.setRotationZ(m_delta_scale);
-	//For keyboard input rotation:
-	temp.setRotationZ(0.0f);
-	cc.m_world *= temp;
-
-	temp.setIdentity();
-	//temp.setRotationY(m_delta_scale);
-	temp.setRotationY(m_rot_y); //keyboard input rotation
-	cc.m_world *= temp;
-
-	temp.setIdentity();
-	//temp.setRotationX(m_delta_scale);
-	temp.setRotationZ(m_rot_x); //keyboard input rotation
-	cc.m_world *= temp;
-	*/
-	cc.m_world.setIdentity();
-
-	Matrix4x4 world_cam;
+void AppWindow::updateCamera()
+{
+	Matrix4x4 world_cam, temp;
 	world_cam.setIdentity();
 
 	temp.setIdentity();
@@ -102,10 +59,10 @@ void AppWindow::update()
 
 
 	//Camera movement: Reduce speed with final term
-	Vector3D new_pos = m_world_cam.getTranslation() + world_cam.getZDirection() * (m_forward * 0.01f);
-	new_pos = new_pos + world_cam.getXDirection() * (m_right * 0.01f);
+	Vector3D new_pos = m_world_cam.getTranslation() + world_cam.getZDirection() * (m_forward * 0.05f);
+	new_pos = new_pos + world_cam.getXDirection() * (m_right * 0.05f);
 
-	cc.m_camera_position = new_pos;
+	//cc.m_camera_position = new_pos;
 	world_cam.setTranslation(new_pos); //so as to not be inside our cube
 
 	m_world_cam = world_cam;
@@ -114,7 +71,10 @@ void AppWindow::update()
 
 
 
-	cc.m_view = world_cam;
+	//cc.m_view = world_cam;
+	m_view_cam = world_cam;
+
+
 	/*
 	cc.m_proj.setOrthoLH
 	(
@@ -125,18 +85,86 @@ void AppWindow::update()
 	);
 	*/
 
+
+
 	int width = (this->getClientWindowRect().right - this->getClientWindowRect().left);
 	int height = (this->getClientWindowRect().bottom - this->getClientWindowRect().top);
 
 	//aspect ratio = width of screen / height of screen
-    //znear & zfar - distance between origin of camera and near/far planes along the view direction
+	//znear & zfar - distance between origin of camera and near/far planes along the view direction
 
-	cc.m_proj.setPerspectiveFovLH(1.57f, ((float)width / (float)height), 0.1f, 100.0f);
+	m_proj_cam.setPerspectiveFovLH(1.57f, ((float)width / (float)height), 0.1f, 100.0f);
 
+}
 
+void AppWindow::updateModel()
+{
+	//Create constant object
+	constant cc;
 
+	//Light rotation
+	Matrix4x4 m_light_rot_matrix; //4x4 Matrix for light direction
+	m_light_rot_matrix.setIdentity();
+	m_light_rot_matrix.setRotationY(m_light_rot_y);
+
+	//Rotate light 45deg for next rot
+	m_light_rot_y += 0.785f * m_delta_time; //0.785 rads
+
+	cc.m_world.setIdentity();
+	cc.m_view = m_view_cam;
+	cc.m_proj = m_proj_cam;
+	cc.m_camera_position = m_world_cam.getTranslation();
+	cc.m_light_direction = m_light_rot_matrix.getZDirection();
 
 	m_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
+}
+
+void AppWindow::updateSkyBox()
+{
+	//Create constant object
+	constant cc;
+
+	cc.m_world.setIdentity();
+	cc.m_world.setScale(Vector3D(100.0f, 100.0f, 100.0f)); //Change size of skybox here 
+
+	//Want the sky to move with the camera...
+	//Set skybox sphere to position of camera
+	cc.m_world.setTranslation(m_world_cam.getTranslation());
+
+	cc.m_view = m_view_cam;
+	cc.m_proj = m_proj_cam;
+	cc.m_camera_position = m_world_cam.getTranslation();
+
+	m_skybox_cb->update(GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext(), &cc);
+}
+
+void AppWindow::drawMesh(const MeshPtr& mesh, VertexShaderPtr& vs, PixelShaderPtr& ps, ConstantBufferPtr& cb, const TexturePtr& tex)
+{
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(vs, cb);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(ps, cb);
+
+	//Set the default shader in the graphics pipeline to be able to draw
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(vs);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(ps);
+
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(ps, tex);
+
+	//Set the vertices of the triangle to draw
+	//GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(mesh->getVertexBuffer());
+
+	//Set the indices of the triangles to draw
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setIndexBuffer(mesh->getIndexBuffer());
+
+	//Draw the triangles from list
+	//GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleList(m_vb->getSizeVertexList(), 0);
+
+	//Altneratively: Draw from the buffer strip
+	//GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleStrip(m_vb->getSizeVertexList(), 0);
+
+	//Draw indexed triangle list
+	//GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(m_ib->getSizeIndexList(), 0, 0);
+	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(mesh->getIndexBuffer()->getSizeIndexList(), 0, 0);
 }
 
 AppWindow::~AppWindow()
@@ -152,13 +180,19 @@ void AppWindow::onCreate()
 	InputSystem::get()->showCursor(false);
 
 	m_wood_texture = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"Assets\\Textures\\brick.png");
+	m_sky_texture = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"Assets\\Textures\\sky.jpg");
 
 	if (m_wood_texture == nullptr)
 	{
 		//Error logging?
 	}
 
-	m_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"Assets\\Meshes\\statue.obj");
+	m_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"Assets\\Meshes\\suzanne.obj");
+	//m_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"Assets\\Planets\\Jupiter\\jupiter.obj");
+	//m_jupiter_texture = GraphicsEngine::get()->getTextureManager()->createTextureFromFile(L"Assets\\Planets\\Jupiter\\2k_jupiter.jpg");
+
+	//Sky mesh
+	m_sky_mesh = GraphicsEngine::get()->getMeshManager()->createMeshFromFile(L"Assets\\Meshes\\sphere.obj");
 
 		RECT rc = this->getClientWindowRect();
 	m_swap_chain = GraphicsEngine::get()->getRenderSystem()->createSwapChain(this->m_hwnd, rc.right - rc.left, rc.bottom - rc.top);
@@ -297,10 +331,19 @@ void AppWindow::onCreate()
 	m_ps = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
 	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
 
+	//SkyBox Shader
+	GraphicsEngine::get()->getRenderSystem()->compilePixelShader(L"SkyBoxShader.hlsl", "psmain", &shader_byte_code, &size_shader);
+	m_sky_ps = GraphicsEngine::get()->getRenderSystem()->createPixelShader(shader_byte_code, size_shader);
+	GraphicsEngine::get()->getRenderSystem()->releaseCompiledShader();
+
 	//CONSTANTBUFFER
 	constant cc;
 	//cc.m_angle = 0;
 	m_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
+
+
+	//Skybox constant buffer
+	m_skybox_cb = GraphicsEngine::get()->getRenderSystem()->createConstantBuffer(&cc, sizeof(constant));
 
 }
 
@@ -321,37 +364,23 @@ void AppWindow::onUpdate()
 	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setViewportSize(rc.right - rc.left, rc.bottom - rc.top);
 
 	//Update constant buffer
+	//Compute transform matrices
 	update();
 	
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(m_vs, m_cb);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setConstantBuffer(m_ps, m_cb);
+	//Set rasterizer: want to render only the front faces of the model (the outside facing ones)
+	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(false);
+	//Render model
+	drawMesh(m_mesh, m_vs, m_ps, m_cb, m_sky_texture);
 
-	//Set the default shader in the graphics pipeline to be able to draw
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexShader(m_vs);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setPixelShader(m_ps);
+	//Set rasterizer to backface: want to render inside model for skybox
+	//Render skybox 
+	GraphicsEngine::get()->getRenderSystem()->setRasterizerState(true);
+	drawMesh(m_sky_mesh, m_vs, m_sky_ps, m_skybox_cb, m_sky_texture);
 
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setTexture(m_ps, m_wood_texture);
-
-	//Set the vertices of the triangle to draw
-	//GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(m_vb);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setVertexBuffer(m_mesh->getVertexBuffer());
-
-	//Set the indices of the triangles to draw
-    GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->setIndexBuffer(m_mesh->getIndexBuffer());
-
-	//Draw the triangles from list
-	//GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleList(m_vb->getSizeVertexList(), 0);
-
-	//Altneratively: Draw from the buffer strip
-	//GraphicsEngine::get()->getImmediateDeviceContext()->drawTriangleStrip(m_vb->getSizeVertexList(), 0);
-
-    //Draw indexed triangle list
-	//GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(m_ib->getSizeIndexList(), 0, 0);
-	GraphicsEngine::get()->getRenderSystem()->getImmediateDeviceContext()->drawIndexedTriangleList(m_mesh->getIndexBuffer()->getSizeIndexList(), 0, 0);
 
 	m_old_delta = m_new_delta;
 	m_new_delta = ::GetTickCount64();
-	delta_delta = (m_old_delta) ? ((m_new_delta - m_old_delta) / 1000.0f) : 0;
+	m_delta_time = (m_old_delta) ? ((m_new_delta - m_old_delta) / 1000.0f) : 0;
 
 
 	m_swap_chain->present(true);
@@ -417,7 +446,6 @@ void AppWindow::onMouseMove(const Point& mouse_pos)
 
 	m_rot_x += (mouse_pos.m_y-(height/2.0f)) * m_delta_time * 0.1f;
 	m_rot_y += (mouse_pos.m_x-(width/2.0f)) * m_delta_time * 0.1f;
-
 
 	InputSystem::get()->setCursorPosition(Point(width / 2.0f, height / 2.0f));
 }
